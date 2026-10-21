@@ -5,6 +5,7 @@ import morgan from 'morgan'
 import mongoose from 'mongoose'
 
 import todoRoutes from './routes/todos.js'
+import userRoutes from './routes/users.js'
 
 /**
  * Server
@@ -42,6 +43,7 @@ app.use(morgan('dev'))
  * Routes
  */
 app.use('/api/todos', todoRoutes)
+app.use('/api/users', userRoutes)
 
 // Start the server only after the database connects
 async function start() {
