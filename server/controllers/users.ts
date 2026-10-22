@@ -3,19 +3,24 @@ import mongoose from 'mongoose'
 import User from '../models/users.js'
 
 export const getAllUser = async (
-  _req: Request,
+  req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const users = await User.find()
+    const page = Math.max(1, Number(req.query.page) || 1)
+    const limit = Math.min(100, Number(req.query.limit) || 20)
+    const skip = (page - 1) * limit
+
+    const [users, total] = await Promise.all([
+      User.find().skip(skip).limit(limit),
+      User.countDocuments(),
+    ])
 
     if (users.length === 0) {
       res.status(200).json({
         status: 'success',
         message: 'No users yet.',
-        data: {
-          users: [],
-        },
+        data: { users: [] },
       })
       return
     }
@@ -23,9 +28,9 @@ export const getAllUser = async (
     res.status(200).json({
       status: 'success',
       results: users.length,
-      data: {
-        users,
-      },
+      total,
+      page,
+      data: { users },
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Something went wrong.'
