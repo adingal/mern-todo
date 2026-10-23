@@ -50,7 +50,7 @@ export const getUser = async (
       return
     }
 
-    const user = await User.findById(id)
+    const user = await User.findById(id).select('-__v -userType -email')
 
     if (!user) {
       res.status(404).json({ status: 'fail', message: 'User not found.' })
