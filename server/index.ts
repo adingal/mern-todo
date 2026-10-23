@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
 import mongoose from 'mongoose'
+import cookieParser from 'cookie-parser'
 
 import todoRoutes from './routes/todos.js'
 import userRoutes from './routes/users.js'
@@ -38,6 +39,7 @@ const PORT = process.env.PORT || 5000
 app.use(cors({ origin: 'http://localhost:3000' }))
 app.use(express.json())
 app.use(morgan('dev'))
+app.use(cookieParser())
 
 /**
  * Routes
