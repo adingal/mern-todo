@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser'
 
 import todoRoutes from './routes/todos.js'
 import userRoutes from './routes/users.js'
+import authRoutes from './routes/auth.js'
 
 /**
  * Server
@@ -46,6 +47,7 @@ app.use(cookieParser())
  */
 app.use('/api/todos', todoRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/auth', authRoutes)
 
 // Start the server only after the database connects
 async function start() {
