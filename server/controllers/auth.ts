@@ -178,3 +178,27 @@ export const register = async (
     res.status(500).json({ status: 'error', message })
   }
 }
+
+/**
+ * Get current user
+ */
+export const getMe = (req: Request, res: Response): void => {
+  // Check if req.user is mounted
+  if (!req.user) {
+    res.status(401).json({ status: 'fail', message: 'Not logged in.' })
+    return
+  }
+
+  // Build response by hand for security, exclude password
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        userType: req.user.userType,
+      },
+    },
+  })
+}
