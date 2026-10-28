@@ -1,8 +1,9 @@
-import mongoose, { Schema, Document } from 'mongoose'
+import mongoose, { Schema, Document, Types } from 'mongoose'
 
 export interface ITodo extends Document {
   title: string
   completed: boolean
+  user: Types.ObjectId
   createdAt: Date
 }
 
@@ -16,6 +17,12 @@ const todoSchema = new Schema<ITodo>({
   completed: {
     type: Boolean,
     default: false,
+  },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'A todo must belong to a user'],
+    index: true, // Index for query
   },
   createdAt: {
     type: Date,
