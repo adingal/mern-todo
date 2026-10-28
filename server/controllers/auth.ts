@@ -254,7 +254,7 @@ export const updateMe = async (
 
     // Update user, validate and return updated data
     const user = await User.findByIdAndUpdate(req.user!._id, updates, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     })
 
