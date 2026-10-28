@@ -2,13 +2,18 @@ import type { Request, Response } from 'express'
 import mongoose from 'mongoose'
 import Todo from '../models/todos.js'
 
+/**
+ * Get all todo
+ */
 export const getAllTodo = async (
-  _req: Request,
+  req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const todos = await Todo.find()
+    // Get all todo under the current user
+    const todos = await Todo.find({ user: req.user!._id })
 
+    // Check if there is todos
     if (todos.length === 0) {
       res.status(200).json({
         status: 'success',
@@ -33,6 +38,9 @@ export const getAllTodo = async (
   }
 }
 
+/**
+ * Get todo
+ */
 export const getTodo = async (
   req: Request<{ id: string }>,
   res: Response,
@@ -40,13 +48,16 @@ export const getTodo = async (
   try {
     const { id } = req.params
 
+    // Check if id is valid
     if (!mongoose.isValidObjectId(id)) {
       res.status(400).json({ status: 'fail', message: 'Invalid id.' })
       return
     }
 
-    const todo = await Todo.findById(id)
+    // Get todo under the current user
+    const todo = await Todo.findOne({ _id: id, user: req.user!._id })
 
+    // Check if there is todo
     if (!todo) {
       res.status(404).json({ status: 'fail', message: 'Todo not found.' })
       return
@@ -62,6 +73,9 @@ export const getTodo = async (
   }
 }
 
+/**
+ * Create todo
+ */
 interface CreateTodoBody {
   title: string
   completed: boolean
@@ -72,20 +86,24 @@ export const createTodo = async (
   res: Response,
 ): Promise<void> => {
   try {
+    // Destructure only approved fields for security
     const { title, completed } = req.body
 
+    // Check and validate required fields
     if (typeof title !== 'string' || title.trim() === '') {
       res.status(400).json({ status: 'fail', message: 'Title is required.' })
       return
     }
 
-    const todo = await Todo.create({ title, completed })
+    // Create todo under the current user
+    const todo = await Todo.create({ title, completed, user: req.user!._id })
 
     res.status(201).json({
       status: 'success',
       data: { todo },
     })
   } catch (err) {
+    // Validation error check
     if (err instanceof mongoose.Error.ValidationError) {
       res.status(400).json({ status: 'fail', message: err.message })
       return
@@ -96,6 +114,9 @@ export const createTodo = async (
   }
 }
 
+/**
+ * Update todo
+ */
 interface UpdateTodoBody {
   title?: string
   completed?: boolean
@@ -108,11 +129,13 @@ export const updateTodo = async (
   try {
     const { id } = req.params
 
+    // Check if id is valid
     if (!mongoose.isValidObjectId(id)) {
       res.status(400).json({ status: 'fail', message: 'Invalid id.' })
       return
     }
 
+    // Check and validate fields
     const updates: UpdateTodoBody = {}
     if (req.body.title !== undefined) {
       if (typeof req.body.title !== 'string' || req.body.title.trim() === '') {
@@ -125,6 +148,7 @@ export const updateTodo = async (
     }
     if (req.body.completed !== undefined) updates.completed = req.body.completed
 
+    // Check if there are updates
     if (Object.keys(updates).length === 0) {
       res
         .status(400)
@@ -132,11 +156,17 @@ export const updateTodo = async (
       return
     }
 
-    const todo = await Todo.findByIdAndUpdate(id, updates, {
-      returnDocument: 'after',
-      runValidators: true,
-    })
+    // Update todo under current user
+    const todo = await Todo.findOneAndUpdate(
+      { _id: id, user: req.user!._id },
+      updates,
+      {
+        returnDocument: 'after',
+        runValidators: true,
+      },
+    )
 
+    // Check if there is todo
     if (!todo) {
       res.status(404).json({ status: 'fail', message: 'Todo not found.' })
       return
@@ -147,6 +177,7 @@ export const updateTodo = async (
       data: { todo },
     })
   } catch (err) {
+    // Validation error check
     if (err instanceof mongoose.Error.ValidationError) {
       res.status(400).json({ status: 'fail', message: err.message })
       return
@@ -157,6 +188,9 @@ export const updateTodo = async (
   }
 }
 
+/**
+ * Delete todo
+ */
 export const deleteTodo = async (
   req: Request<{ id: string }>,
   res: Response,
@@ -164,18 +198,22 @@ export const deleteTodo = async (
   try {
     const { id } = req.params
 
+    // Check if id is valid
     if (!mongoose.isValidObjectId(id)) {
       res.status(400).json({ status: 'fail', message: 'Invalid id.' })
       return
     }
 
-    const todo = await Todo.findByIdAndDelete(id)
+    // Delete todo under the current user
+    const todo = await Todo.findOneAndDelete({ _id: id, user: req.user!._id })
 
+    // Check if there is todo
     if (!todo) {
       res.status(404).json({ status: 'fail', message: 'Todo not found.' })
       return
     }
 
+    // No content
     res.status(204).end()
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Something went wrong.'
