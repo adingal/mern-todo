@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import validator from 'validator'
 import User from '../models/users.js'
+import Todo from '../models/todos.js'
 
 // Sign token
 const signToken = (id: string): string =>
@@ -201,4 +202,129 @@ export const getMe = (req: Request, res: Response): void => {
       },
     },
   })
+}
+
+/**
+ * Update user
+ *
+ * - for logged in user
+ */
+interface UpdateMeBody {
+  name?: unknown
+  email?: unknown
+}
+
+export const updateMe = async (
+  req: Request<object, unknown, UpdateMeBody>,
+  res: Response,
+): Promise<void> => {
+  try {
+    // Limit field updates
+    const { name, email } = req.body
+
+    const updates: { name?: string; email?: string } = {}
+
+    // Check and validate name
+    if (name !== undefined) {
+      if (typeof name !== 'string' || !name.trim()) {
+        res
+          .status(400)
+          .json({ status: 'fail', message: 'Name cannot be blank.' })
+        return
+      }
+      updates.name = name
+    }
+
+    // Check and validate email
+    if (email !== undefined) {
+      if (typeof email !== 'string' || !validator.isEmail(email)) {
+        res.status(400).json({ status: 'fail', message: 'Invalid email.' })
+        return
+      }
+      updates.email = email
+    }
+
+    // Check if there is updates
+    if (Object.keys(updates).length === 0) {
+      res
+        .status(400)
+        .json({ status: 'fail', message: 'No valid fields to update.' })
+      return
+    }
+
+    // Update user, validate and return updated data
+    const user = await User.findByIdAndUpdate(req.user!._id, updates, {
+      new: true,
+      runValidators: true,
+    })
+
+    // Check if no user is found
+    if (!user) {
+      res.status(404).json({ status: 'fail', message: 'User not found.' })
+      return
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          userType: user.userType,
+        },
+      },
+    })
+  } catch (err) {
+    // Email duplicate check
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      err.code === 11000
+    ) {
+      res
+        .status(409)
+        .json({ status: 'fail', message: 'Email is already registered.' })
+      return
+    }
+
+    // Validation error check
+    if (err instanceof mongoose.Error.ValidationError) {
+      res.status(400).json({ status: 'fail', message: err.message })
+      return
+    }
+
+    const message = err instanceof Error ? err.message : 'Something went wrong.'
+    res.status(500).json({ status: 'error', message })
+  }
+}
+
+/**
+ * Delete user
+ *
+ * - for logged in user
+ */
+export const deleteMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = req.user!._id
+
+    const user = await User.findByIdAndDelete(id)
+
+    // Check if no user is found
+    if (!user) {
+      res.status(404).json({ status: 'fail', message: 'User not found.' })
+      return
+    }
+
+    // Also delete todos by user
+    await Todo.deleteMany({ user: id })
+
+    // Clear cookie and send no content
+    res.clearCookie('jwt', cookieOptions)
+    res.status(204).end()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Something went wrong.'
+    res.status(500).json({ status: 'error', message })
+  }
 }
