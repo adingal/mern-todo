@@ -3,14 +3,16 @@ import {
   getAllUser,
   getUser,
   createUser,
-  updateUser,
   deleteUser,
 } from '../controllers/users.js'
 
+import { protect, isAdmin } from '../middlewares/auth.js'
+
 const router = express.Router()
 
+// Protect user routes - admin only
+router.use(protect, isAdmin)
 router.route('/').get(getAllUser).post(createUser)
-
-router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
+router.route('/:id').get(getUser).delete(deleteUser)
 
 export default router
