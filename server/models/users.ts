@@ -2,11 +2,14 @@ import mongoose, { Schema, Document } from 'mongoose'
 import bcrypt from 'bcrypt'
 import validator from 'validator'
 
+export const USER_TYPES = ['user', 'admin'] as const
+export type UserType = (typeof USER_TYPES)[number]
+
 export interface IUser extends Document {
   name: string
   email: string
   password: string
-  userType: 'user' | 'admin'
+  userType: UserType
   createdAt: Date
   comparePassword(candidate: string): Promise<boolean>
 }
