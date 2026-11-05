@@ -7,6 +7,14 @@ export interface AuthUser {
   userType: 'user' | 'admin'
 }
 
+export class ApiError extends Error {
+  status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
+
 // Shared fetch wrapper: JSON in, JSON out, errors become thrown Errors.
 // Relative URLs go through the Vite proxy in dev, so the jwt cookie is same-origin.
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -19,7 +27,10 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   const body = await res.json().catch(() => null)
 
   if (!res.ok) {
-    throw new Error(body?.message ?? 'Something went wrong. Try again.')
+    throw new ApiError(
+      body?.message ?? 'Something went wrong. Try again.',
+      res.status,
+    )
   }
 
   return body.data as T
@@ -33,3 +44,5 @@ export const login = (values: LoginValues) =>
       password: values.password,
     }),
   })
+
+export const getMe = () => request<{ user: AuthUser }>('/api/auth/me')
