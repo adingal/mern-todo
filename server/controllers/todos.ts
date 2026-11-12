@@ -1,6 +1,17 @@
 import type { Request, Response } from 'express'
 import mongoose from 'mongoose'
-import Todo from '../models/todos.js'
+import Todo, { TODO_TYPES, type TodoType } from '../models/todos.js'
+
+// Check todo type
+const isTodoType = (value: unknown): value is TodoType =>
+  typeof value === 'string' && (TODO_TYPES as readonly string[]).includes(value)
+
+// Returns a Date, or null if the value isn't a valid date string
+const parseDate = (value: unknown): Date | null => {
+  if (typeof value !== 'string') return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
 
 /**
  * Get all todo
@@ -79,6 +90,8 @@ export const getTodo = async (
 interface CreateTodoBody {
   title: string
   completed: boolean
+  type?: TodoType
+  dueDate?: Date
 }
 
 export const createTodo = async (
@@ -87,7 +100,7 @@ export const createTodo = async (
 ): Promise<void> => {
   try {
     // Destructure only approved fields for security
-    const { title, completed } = req.body
+    const { title, completed, type, dueDate } = req.body
 
     // Check and validate required fields
     if (typeof title !== 'string' || title.trim() === '') {
@@ -95,8 +108,32 @@ export const createTodo = async (
       return
     }
 
+    // Check and validate type
+    if (type !== undefined && !isTodoType(type)) {
+      res.status(400).json({
+        status: 'fail',
+        message: `Type must be one of: ${TODO_TYPES.join(', ')}.`,
+      })
+      return
+    }
+
+    // Check and validate due date
+    const parsedDue = dueDate !== undefined ? parseDate(dueDate) : undefined
+    if (dueDate !== undefined && !parsedDue) {
+      res
+        .status(400)
+        .json({ status: 'fail', message: 'dueDate must be a valid date.' })
+      return
+    }
+
     // Create todo under the current user
-    const todo = await Todo.create({ title, completed, user: req.user!._id })
+    const todo = await Todo.create({
+      title,
+      user: req.user!._id,
+      ...(completed !== undefined && { completed }),
+      ...(type !== undefined && { type }),
+      ...(parsedDue && { dueDate: parsedDue }),
+    })
 
     res.status(201).json({
       status: 'success',
@@ -120,6 +157,8 @@ export const createTodo = async (
 interface UpdateTodoBody {
   title?: string
   completed?: boolean
+  type?: TodoType
+  dueDate?: Date
 }
 
 export const updateTodo = async (
@@ -136,17 +175,42 @@ export const updateTodo = async (
     }
 
     // Check and validate fields
+    const { title, type, completed, dueDate } = req.body
     const updates: UpdateTodoBody = {}
-    if (req.body.title !== undefined) {
-      if (typeof req.body.title !== 'string' || req.body.title.trim() === '') {
+    if (title !== undefined) {
+      if (typeof title !== 'string' || title.trim() === '') {
         res
           .status(400)
           .json({ status: 'fail', message: 'Title cannot be blank.' })
         return
       }
-      updates.title = req.body.title
+      updates.title = title
     }
-    if (req.body.completed !== undefined) updates.completed = req.body.completed
+    if (completed !== undefined) updates.completed = completed
+
+    // Check and validate type
+    if (type !== undefined) {
+      if (!isTodoType(type)) {
+        res.status(400).json({
+          status: 'fail',
+          message: `type must be one of: ${TODO_TYPES.join(', ')}.`,
+        })
+        return
+      }
+      updates.type = type
+    }
+
+    // Check and validate due date
+    if (dueDate !== undefined) {
+      const parsed = parseDate(dueDate)
+      if (!parsed) {
+        res
+          .status(400)
+          .json({ status: 'fail', message: 'dueDate must be a valid date.' })
+        return
+      }
+      updates.dueDate = parsed
+    }
 
     // Check if there are updates
     if (Object.keys(updates).length === 0) {
