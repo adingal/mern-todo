@@ -36,6 +36,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   return body.data as T
 }
 
+// Login
 export const login = (values: LoginValues) =>
   request<{ user: AuthUser }>('/api/auth/login', {
     method: 'POST',
@@ -45,4 +46,9 @@ export const login = (values: LoginValues) =>
     }),
   })
 
+// Logout
+export const logout = () =>
+  request<unknown>('/api/auth/logout', { method: 'POST' })
+
+// Get logged in user
 export const getMe = () => request<{ user: AuthUser }>('/api/auth/me')
