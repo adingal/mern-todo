@@ -2,11 +2,21 @@ import { Routes, Route, useNavigate } from 'react-router'
 import Login from './components/Login'
 import Todos from './components/Todos'
 import ProtectedRoute from './routes/ProtectedRoute'
+import { useAuth } from './context/AuthContext'
 import './App.css'
 
 function LoginPage() {
   const navigate = useNavigate()
-  return <Login onSuccess={() => navigate('/todos')} />
+  const { signIn } = useAuth()
+
+  return (
+    <Login
+      onSuccess={(user) => {
+        signIn(user)
+        navigate('/todos')
+      }}
+    />
+  )
 }
 
 function App() {
