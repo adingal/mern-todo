@@ -37,3 +37,10 @@ export const EyeOffIcon = (props: SVGProps<SVGSVGElement>) => (
     <path d='M9.9 4.2A10 10 0 0 1 12 4c6.5 0 10 8 10 8a18 18 0 0 1-2.2 3.2M6.6 6.6A18 18 0 0 0 2 12s3.5 8 10 8a10 10 0 0 0 5.4-1.6M2 2l20 20M9.9 9.9a3 3 0 0 0 4.2 4.2' />
   </Icon>
 )
+
+export const SearchIcon = (props: SVGProps<SVGSVGElement>) => (
+  <Icon {...props}>
+    <circle cx='11' cy='11' r='7' />
+    <path d='m20 20-3.5-3.5' />
+  </Icon>
+)
