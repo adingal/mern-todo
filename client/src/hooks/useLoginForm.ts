@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ChangeEvent, FocusEvent, FormEvent } from 'react'
-import { login } from '../api/auth'
+import { login, type AuthUser } from '../api/auth'
 import { validateLogin } from '../utils/validation'
 import type { LoginValues } from '../utils/validation'
 
@@ -8,7 +8,7 @@ const INITIAL_VALUES: LoginValues = { email: '', password: '' }
 
 type Touched = Partial<Record<keyof LoginValues, boolean>>
 
-export function useLoginForm(onSuccess?: () => void) {
+export function useLoginForm(onSuccess?: (user: AuthUser) => void) {
   const [values, setValues] = useState<LoginValues>(INITIAL_VALUES)
   const [touched, setTouched] = useState<Touched>({})
   const [serverError, setServerError] = useState<string | null>(null)
@@ -43,8 +43,8 @@ export function useLoginForm(onSuccess?: () => void) {
     setServerError(null)
 
     try {
-      await login(values)
-      onSuccess?.()
+      const { user } = await login(values)
+      onSuccess?.(user)
     } catch (err) {
       setServerError(
         err instanceof Error ? err.message : 'Something went wrong.',

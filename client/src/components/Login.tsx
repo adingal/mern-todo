@@ -1,3 +1,4 @@
+import type { AuthUser } from '../api/auth'
 import AuthLayout from '../components/auth/AuthLayout'
 import FormField from '../components/auth/FormField'
 import PasswordField from '../components/auth/PasswordField'
@@ -5,7 +6,7 @@ import { useLoginForm } from '../hooks/useLoginForm'
 import { MIN_PASSWORD_LENGTH } from '../utils/validation'
 
 interface LoginProps {
-  onSuccess?: () => void
+  onSuccess?: (user: AuthUser) => void
 }
 
 export default function Login({ onSuccess }: LoginProps) {
