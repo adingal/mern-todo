@@ -5,7 +5,7 @@ export default function ProtectedRoute() {
   const { status } = useAuth()
 
   if (status === 'loading') return null // or a spinner
-  if (status === 'out') return <Navigate to='/login' replace />
+  if (status === 'out') return <Navigate to='/' replace />
 
   if (status === 'error') {
     return (
