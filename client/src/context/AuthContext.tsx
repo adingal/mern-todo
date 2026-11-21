@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ApiError, getMe, logout as logoutRequest } from '../api/auth'
+import { getMe, logout as logoutRequest } from '../api/auth'
+import { ApiError } from '../api/request'
 import type { AuthUser } from '../api/auth'
 
 type Status = 'loading' | 'in' | 'out' | 'error'
