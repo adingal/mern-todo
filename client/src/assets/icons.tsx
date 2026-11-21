@@ -44,3 +44,25 @@ export const SearchIcon = (props: SVGProps<SVGSVGElement>) => (
     <path d='m20 20-3.5-3.5' />
   </Icon>
 )
+
+export const LogoutIcon = (props: SVGProps<SVGSVGElement>) => (
+  <Icon {...props}>
+    <path d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' />
+    <path d='M16 17l5-5-5-5M21 12H9' />
+  </Icon>
+)
+
+export const EditIcon = (props: SVGProps<SVGSVGElement>) => (
+  <Icon {...props}>
+    <path d='M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z' />
+  </Icon>
+)
+
+export const DeleteIcon = (props: SVGProps<SVGSVGElement>) => (
+  <Icon {...props}>
+    <path d='M3 6h18' />
+    <path d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' />
+    <path d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6' />
+    <path d='M10 11v6M14 11v6' />
+  </Icon>
+)
