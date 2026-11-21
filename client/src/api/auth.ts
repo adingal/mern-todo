@@ -33,7 +33,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     )
   }
 
-  return body.data as T
+  return body?.data as T
 }
 
 // Login
@@ -52,3 +52,7 @@ export const logout = () =>
 
 // Get logged in user
 export const getMe = () => request<{ user: AuthUser }>('/api/auth/me')
+
+// Delete todo
+export const deleteTodo = (id: string) =>
+  request<unknown>(`/api/todos/${id}`, { method: 'DELETE' })
