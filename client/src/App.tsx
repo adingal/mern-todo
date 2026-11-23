@@ -3,6 +3,8 @@ import Login from './components/Login'
 import Todos from './components/Todos'
 import ProtectedRoute from './routes/ProtectedRoute'
 import { useAuth } from './context/AuthContext'
+import '@fontsource-variable/inter'
+import '@fontsource-variable/raleway'
 import './App.css'
 
 function LoginPage() {
